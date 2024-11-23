@@ -1,2 +1,11 @@
-# splitwise-custom-app
-Exploring SplitWise SDK for Python and automating boring task of adding expenses on the Splitwise
+# Psuedo Splitwise App
+
+## Fun project
+
+- Add data onto Splitwise App through custom web aplication
+
+## Notes
+
+Splitwise Javascript SDK is used in this project.
+
+`https://github.com/keriwarr/splitwise/tree/master`
