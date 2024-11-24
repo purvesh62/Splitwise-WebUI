@@ -1,11 +1,11 @@
 import {Metadata} from "next"
 import * as React from "react";
-import {getGroup, getGroupExpense, getGroups} from "@/server/splitwise-actions/getGroups";
+import {getGroup, getGroupExpense} from "@/server/splitwise-actions/getGroups";
 import Image from "next/image";
 import {TbCategoryPlus} from "react-icons/tb";
-import {groups} from "@/data/groups";
-import {groupExpenseData} from "@/data/group-expense";
-import {groupSelected} from "@/data/group-selected";
+// import {groups} from "@/data/groups";
+// import {groupExpenseData} from "@/data/group-expense";
+// import {groupSelected} from "@/data/group-selected";
 import {Avatar, AvatarImage} from "@/components/ui/avatar";
 import {cn} from "@/lib/utils";
 import {AddExpenseDrawer} from "@/components/application/add-expense-drawer";
