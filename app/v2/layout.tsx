@@ -83,7 +83,7 @@ export default async function Layout({children}: { children: React.ReactNode }) 
 						" p-2"}>
 						Groups
 					</div>
-					<div className={"flex flex-col gap-1 min-h-1/2 overflow-y-auto"}>
+					<div className={"flex flex-col gap-1 max-h-96 overflow-y-auto"}>
 						{groups && groups.map((group) => {
 							return <Link
 								href={`/v2/group/${group.id}`}
@@ -102,7 +102,7 @@ export default async function Layout({children}: { children: React.ReactNode }) 
 						" p-2"}>
 						Friends
 					</div>
-					<div className={"flex flex-col gap-1 min-h-1/2  overflow-y-auto"}>
+					<div className={"flex flex-col gap-1 max-h-96 overflow-y-auto"}>
 						{friends && friends.map((friend) => {
 							return <Link
 								// href={`/v2/friend/${friend.id}`}

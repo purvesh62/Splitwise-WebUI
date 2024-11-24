@@ -37,7 +37,6 @@ export default async function Page({params}: { params: any }) {
 	// const groupExpense: GroupExpenses[] = await getGroupExpense(params.groupID);
 	return <div className="w-full flex gap-4">
 		<div className={"max-w-[444rem] border-1 border-gray-200 shadow-2xl p-2"}>
-			
 			<nav className={" flex justify-between w-full max-h-20 py-4 mb-2 border-b-2"}>
 				<div className={"flex gap-2 items-center"}>
 					<Image src={group.avatar?.medium as string} className={"rounded-full"} width={40} height={40}
@@ -49,7 +48,6 @@ export default async function Page({params}: { params: any }) {
 					<AddExpenseDrawer userGroup={group}/>
 				</div>
 			</nav>
-			
 			{groupExpenses && groupExpenses.map((expense: GroupExpenses) => {
 				return <div className={"flex w-full justify-start border-b-2 py-2"} key={expense.id}>
 					<div className={"flex flex-col w-10 pr-2 text-gray-500 justify-center items-center"}>
