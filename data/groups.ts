@@ -1,4 +1,4 @@
-export const groups: SplitwiseGroup[] = [
+export const groupsData: SplitwiseGroup[] = [
 	{
 		"id": 0,
 		"name": "Non-group expenses",

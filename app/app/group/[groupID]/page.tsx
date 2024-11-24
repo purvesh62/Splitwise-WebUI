@@ -1,16 +1,14 @@
 import {Metadata} from "next"
 import * as React from "react";
-import {getGroup, getGroupExpense} from "@/server/splitwise-actions/getGroups";
+import {getGroup, getGroupExpense, getGroups} from "@/server/splitwise-actions/getGroups";
 import Image from "next/image";
 import {TbCategoryPlus} from "react-icons/tb";
-// import {groups} from "@/data/groups";
-// import {groupExpenseData} from "@/data/group-expense";
-// import {groupSelected} from "@/data/group-selected";
 import {Avatar, AvatarImage} from "@/components/ui/avatar";
 import {cn} from "@/lib/utils";
 import {AddExpenseDrawer} from "@/components/application/add-expense-drawer";
 import {redirect} from "next/navigation";
 import {auth} from "@/server/auth";
+import Sidebar from "@/components/application/sidebar";
 
 export const metadata: Metadata = {
 	title: "Group",
@@ -19,24 +17,21 @@ export const metadata: Metadata = {
 
 export default async function Page({params}: { params: any }) {
 	const session = await auth();
-	
 	if (!session) {
 		return redirect('/auth/login')
 	}
-	
 	const group: SplitwiseGroup = await getGroup(params.groupID);
-	// const group = groupSelected;
-	// const groupExpenses = groupExpenseData;
 	const groupExpenses: GroupExpenses[] = await getGroupExpense(params.groupID);
-	const colors = ['cyan', 'pink', 'green', 'blue', 'violet', 'purple'];
 	
+	const colors = ['cyan', 'pink', 'green', 'blue', 'violet', 'purple'];
 	
 	if (groupExpenses === undefined) {
 		return <div></div>
 	}
 	// const groupExpense: GroupExpenses[] = await getGroupExpense(params.groupID);
-	return <div className="w-full flex gap-4">
-		<div className={"max-w-[444rem] border-1 border-gray-200 shadow-2xl p-2"}>
+	return <div className={"w-full flex justify-center gap-4"}>
+		<Sidebar/>
+		<div className={"border-1 border-gray-200 shadow-2xl p-2"}>
 			<nav className={" flex justify-between w-full max-h-20 py-4 mb-2 border-b-2"}>
 				<div className={"flex gap-2 items-center"}>
 					<Image src={group.avatar?.medium as string} className={"rounded-full"} width={40} height={40}
@@ -44,7 +39,6 @@ export default async function Page({params}: { params: any }) {
 					<p className={"text-xl capitalize font-mono"}>{group.name}</p>
 				</div>
 				<div>
-					{/*<Button className={"bg-green-500 w-32 h-8 hover:bg-green-400"}>Add Expense</Button>*/}
 					<AddExpenseDrawer userGroup={group}/>
 				</div>
 			</nav>
@@ -83,7 +77,7 @@ export default async function Page({params}: { params: any }) {
 			})}
 		</div>
 		
-		<div className={"flex flex-col gap-4 min-w-80"}>
+		<div className={"flex flex-col gap-4"}>
 			<p className={"text-lg text-gray-500 font-mono pt-5"}>Group Balances</p>
 			{group.members.map(user => {
 				return <div className={"flex gap-4"} key={user.id}>
