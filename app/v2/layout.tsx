@@ -13,9 +13,9 @@ import getUser from "@/server/splitwise-actions/getUser";
 import {getGroups} from "@/server/splitwise-actions/getGroups";
 import {getFriends} from "@/server/splitwise-actions/getFriends";
 
-import {friendsData} from "@/data/friends";
-import {userData} from "@/data/user";
-import {groups as groupData} from "@/data/groups";
+// import {friendsData} from "@/data/friends";
+// import {userData} from "@/data/user";
+// import {groups as groupData} from "@/data/groups";
 import {auth} from "@/server/auth";
 import {redirect} from "next/navigation";
 
