@@ -15,7 +15,6 @@ export default async function Home() {
 
 	const groups = await getGroups();
 	// const groupExpenses = await getGroupExpense(69745372)
-	// console.log(groupExpenses);
 	// const userGroups: Group[] = await axios.get(
 	// 	`http://127.0.0.1:6001/user-groups/1`,
 	// 	{

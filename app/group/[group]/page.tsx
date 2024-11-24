@@ -16,7 +16,6 @@ export default async function Page({ params }: { params: any }) {
 
 	const group = await getGroup(params.group);
 	// const res = await testCreateExpense();
-	console.log(group)
 	return <div className="">
 		<nav className={"flex w-full p-4 gap-2 border-2 justify-between items-center"}>
 			<div className={`flex gap-2 cursor-pointer items-center`}>

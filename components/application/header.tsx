@@ -1,5 +1,5 @@
 import UserAvatar from "@/components/application/user-avatar";
-import { auth } from "@/server/auth";
+import {auth} from "@/server/auth";
 import getUser from "@/server/splitwise-actions/getUser";
 import Link from "next/link";
 
@@ -14,7 +14,7 @@ export default async function Header() {
 			" top-0"}>
 		<Link href="/"><h2 className={"pl-2"}>Pseudo Split wise</h2></Link>
 		<div>
-			<UserAvatar user={user} />
+			<UserAvatar user={user}/>
 		</div>
 	</div>
 }

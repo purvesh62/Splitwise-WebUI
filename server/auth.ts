@@ -20,8 +20,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const validatedFields = LoginSchema.safeParse(credentials)
                 if (!validatedFields.success) return null;
                 const { email, password } = validatedFields.data;
-                console.log(process.env.ADMIN_EMAIL, process.env.ADMIN_PASSWORD);
-                console.log(email, password);
                 if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
                     return {
                         email: process.env.ADMIN_EMAIL,

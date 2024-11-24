@@ -161,7 +161,6 @@ export function AddExpenseDrawer({ userGroup }: { userGroup: SplitwiseGroup }) {
 		// 		"Content-Type": "application/json",
 		// 	},
 		// }).then(res => res.data).catch(err => console.error(err));
-		// console.log(response)
 		// if (response.success === true) {
 		// 	toast({
 		// 		variant: "default",
