@@ -18,6 +18,7 @@ export const userData: SplitwiseUser = {
 	"default_group_id": -1,
 	"notifications_read": "2024-11-23T17:23:00Z",
 	"notifications_count": 0,
+	"balance": [],
 	"notifications": {
 		"added_as_friend": false,
 		"added_to_group": false,
