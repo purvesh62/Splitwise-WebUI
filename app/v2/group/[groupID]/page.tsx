@@ -62,14 +62,15 @@ export default async function Page({params}: { params: any }) {
 					</div>
 					
 					<div className={"flex w-full items-center gap-2 text-gray-700 justify-between min-w-[700px]"}>
-						<div className={"flex gap-4 pr-4 truncate overflow-hidden whitespace-nowrap"}>
+						<div className={"flex gap-4 pr-4 items-center truncate overflow-hidden" +
+							" whitespace-nowrap"}>
 							<span className={cn(`bg-${colors[Math.floor(Math.random() * colors.length)]}-200`)}>
 								<TbCategoryPlus
 									size={20}
 									className={cn("h-10 p-2 w-10")}
 								/>
 							</span>
-							<p>{expense.description}</p>
+							<p className={"h-full text-center"}>{expense.description}</p>
 						</div>
 						<div className={"flex flex-col min-w-32"}>
 							<p className={"text-xs text-end"}>
