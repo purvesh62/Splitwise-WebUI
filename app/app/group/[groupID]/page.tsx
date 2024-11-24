@@ -1,6 +1,6 @@
 import {Metadata} from "next"
 import * as React from "react";
-import {getGroup, getGroupExpense, getGroups} from "@/server/splitwise-actions/getGroups";
+import {getGroup, getGroupExpense} from "@/server/splitwise-actions/getGroups";
 import Image from "next/image";
 import {TbCategoryPlus} from "react-icons/tb";
 import {Avatar, AvatarImage} from "@/components/ui/avatar";
