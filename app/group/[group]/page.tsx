@@ -4,6 +4,7 @@ import * as React from "react";
 import { getGroup, getGroupExpense } from "@/server/splitwise-actions/getGroups";
 import GroupExpensesTable from "@/components/application/group-expenses";
 import Image from "next/image";
+import Header from "@/components/application/header";
 
 export const metadata: Metadata = {
 	title: "Groups",
@@ -17,6 +18,7 @@ export default async function Page({ params }: { params: any }) {
 	const group = await getGroup(params.group);
 	// const res = await testCreateExpense();
 	return <div className="">
+		<Header />
 		<nav className={"flex w-full p-4 gap-2 border-2 justify-between items-center"}>
 			<div className={`flex gap-2 cursor-pointer items-center`}>
 				<Image src={group?.avatar?.medium} alt={group.name} width={40} height={30} />

@@ -1,18 +1,21 @@
-import { auth } from "@/server/auth";
-import { redirect } from "next/navigation";
-import { AddExpenseDrawer } from "@/components/application/add-expense-drawer";
+import {auth} from "@/server/auth";
+import {redirect} from "next/navigation";
+import {AddExpenseDrawer} from "@/components/application/add-expense-drawer";
 import axios from "axios";
-import { Group } from "@/types/splitwise-types";
+import {Group} from "@/types/splitwise-types";
 import UserGroups from "@/components/application/groups";
-import { getGroups, getGroup, getGroupExpense } from "@/server/splitwise-actions/getGroups"
+import {getGroups, getGroup, getGroupExpense} from "@/server/splitwise-actions/getGroups"
+import Header from "@/components/application/header";
 
 export default async function Home() {
 	const session = await auth();
-
+	
 	if (!session) {
 		return redirect('/auth/login')
 	}
-
+	
+	return redirect("/v2/group");
+	
 	const groups = await getGroups();
 	// const groupExpenses = await getGroupExpense(69745372)
 	// const userGroups: Group[] = await axios.get(
@@ -26,9 +29,10 @@ export default async function Home() {
 	// 			return []
 	// 		}
 	// 	})
-
+	
 	return <div>
-		<UserGroups splitwiseGroups={groups} />
+		<Header/>
+		<UserGroups splitwiseGroups={groups}/>
 		{/*<AddExpenseDrawer/>*/}
 	</div>
 }
