@@ -24,17 +24,9 @@ import {
 	MultiSelectorTrigger,
 } from "@/components/ui/multi-select";
 
-import {
-	Form,
-	FormControl,
-	FormDescription,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form"
+import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form"
 import {Input} from "@/components/ui/input"
-import {toast, useToast} from "@/components/ui/use-toast";
+import {useToast} from "@/components/ui/use-toast";
 import Image from "next/image";
 import {useAction} from "next-safe-action/hooks";
 import {createExpenseSchema} from "@/schema/create-expense-schema";
@@ -59,12 +51,14 @@ export function AddExpenseDrawer({userGroup}: { userGroup: SplitwiseGroup }) {
 	
 	const {execute, status} = useAction(createExpense, {
 		onSuccess(data) {
+			debugger
 			if (data.success) {
 				toast({
 					variant: "default",
 					title: "Expense created successfully",
 					description: "Expense created successfully",
 				})
+				window.location.reload();
 			} else {
 				toast({
 					variant: "destructive",
@@ -84,40 +78,39 @@ export function AddExpenseDrawer({userGroup}: { userGroup: SplitwiseGroup }) {
 		totalCost = parseFloat(totalCost.toFixed(2));
 		const equalShare: number = parseFloat((totalCost / numberOfOwedUsers).toFixed(2));
 		
-		
+		debugger
 		// Prepare users array
 		const users = owedBy.map(user => ({
 			user_id: user.id,
-			paid_share: user.id === paidBy.id ? totalCost : 0.00, // Paid amount only for the payer
-			owed_share: equalShare // Everyone owes their share
+			paid_share: (user.id === paidBy.id ? totalCost : 0.00).toString(), // Paid amount only for the payer
+			owed_share: equalShare.toString() // Everyone owes their share
 		}));
 		
 		// If the payer is not in the owed users, add them explicitly
 		if (!isPayerInOwedBy) {
 			users.push({
 				user_id: paidBy.id,
-				paid_share: totalCost, // Total amount paid by this user
-				owed_share: 0.00 // Payer owes nothing
+				paid_share: totalCost.toString(), // Total amount paid by this user
+				owed_share: 0.00.toString() // Payer owes nothing
 			});
 		}
 		
 		if (totalCost > equalShare * numberOfOwedUsers) {
 			// If the total cost is greater than the sum of owed shares, the payer owes the difference
 			const difference = Number.parseFloat((totalCost - (equalShare * numberOfOwedUsers)).toFixed(2));
-			users[0].owed_share = users[0].owed_share + difference;
+			users[0].owed_share = (Number.parseFloat(users[0].owed_share) + difference).toString();
 		}
 		
 		// Construct the payload
-		const expensePayload = {
-			amount: totalCost.toFixed(2),
-			description: description,
+		return {
+			amount: totalCost.toFixed(2).toString(),
+			description: description.toString(),
 			group_id: groupId,
 			currency_code: currency,
 			users: users,
 			paid_by: [],
 			owed_by: []
-		};
-		return expensePayload
+		}
 	}
 	
 	async function onSubmit(values: z.infer<typeof createExpenseSchema>) {
@@ -143,6 +136,7 @@ export function AddExpenseDrawer({userGroup}: { userGroup: SplitwiseGroup }) {
 			Number.parseFloat(values.amount),
 			values.description,
 		)
+		console.log(expensePayload);
 		if (expensePayload.group_id === 0) {
 			setPaidBy([])
 			setOwedBy([])
@@ -155,9 +149,9 @@ export function AddExpenseDrawer({userGroup}: { userGroup: SplitwiseGroup }) {
 			return
 		}
 		execute(expensePayload);
-		setPaidBy([])
-		setOwedBy([])
-		form.reset()
+		// setPaidBy([])
+		// setOwedBy([])
+		// form.reset()
 	}
 	
 	const onChangePaidBy = (values: string[]) => {

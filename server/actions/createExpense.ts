@@ -13,6 +13,8 @@ export const createExpense = action(
 			consumerKey: process.env.consumerKey,
 			consumerSecret: process.env.consumerSecret,
 		});
+		debugger
+		console.log(amount, description, group_id, currency_code, users);
 		const response = sw
 			.createExpense({
 				cost: amount,
