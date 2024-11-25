@@ -49,7 +49,7 @@ export function AddExpenseDrawer({userGroup}: { userGroup: SplitwiseGroup }) {
 		},
 	})
 	
-	const {execute, status} = useAction(createExpense, {
+	const {execute} = useAction(createExpense, {
 		onSuccess(data) {
 			debugger
 			if (data.success) {

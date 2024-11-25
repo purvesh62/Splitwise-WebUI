@@ -8,13 +8,11 @@ const action = createSafeActionClient()
 
 export const createExpense = action(
 	createExpenseSchema,
-	async ({amount, description, group_id, currency_code, users, paid_by, owed_by}) => {
+	async ({amount, description, group_id, currency_code, users}) => {
 		const sw = Splitwise({
 			consumerKey: process.env.consumerKey,
 			consumerSecret: process.env.consumerSecret,
 		});
-		debugger
-		console.log(amount, description, group_id, currency_code, users);
 		const response = sw
 			.createExpense({
 				cost: amount,
