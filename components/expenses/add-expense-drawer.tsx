@@ -34,9 +34,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
-import { useAction } from "next-safe-action/hooks";
-import { createExpenseSchema } from "@/schemas/expense";
 import { createExpense } from "@/server/actions/expenses";
+import { createExpenseSchema } from "@/schemas/expense";
 import { Plus } from "lucide-react";
 import type { SplitwiseGroup, SplitwiseUser } from "@/types/splitwise";
 
@@ -103,20 +102,9 @@ export function AddExpenseDrawer({ userGroup }: { userGroup: SplitwiseGroup }) {
     },
   });
 
-  const { execute, isExecuting } = useAction(createExpense, {
-    onSuccess() {
-      toast({ title: "Expense created successfully" });
-      setOpen(false);
-      setPaidBy([]);
-      setOwedBy([]);
-      form.reset();
-    },
-    onError() {
-      toast({ variant: "destructive", title: "Failed to create expense" });
-    },
-  });
+  const [isExecuting, setIsExecuting] = React.useState(false);
 
-  function onSubmit(values: z.infer<typeof createExpenseSchema>) {
+  async function onSubmit(values: z.infer<typeof createExpenseSchema>) {
     if (paidBy.length === 0) {
       toast({
         variant: "destructive",
@@ -148,7 +136,24 @@ export function AddExpenseDrawer({ userGroup }: { userGroup: SplitwiseGroup }) {
       parseFloat(values.amount),
       values.description
     );
-    execute(payload);
+
+    setIsExecuting(true);
+    try {
+      const result = await createExpense(payload);
+      if (result?.error) {
+        toast({ variant: "destructive", title: result.error });
+      } else {
+        toast({ title: "Expense created successfully" });
+        setOpen(false);
+        setPaidBy([]);
+        setOwedBy([]);
+        form.reset();
+      }
+    } catch {
+      toast({ variant: "destructive", title: "Failed to create expense" });
+    } finally {
+      setIsExecuting(false);
+    }
   }
 
   const onChangePaidBy = (values: string[]) => {

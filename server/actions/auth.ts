@@ -1,32 +1,43 @@
 "use server";
 
-import { LoginSchema } from "@/schemas/auth";
-import { actionClient } from "@/server/lib/action-client";
-import { signIn } from "@/server/auth";
-import { AuthError } from "next-auth";
+import { auth } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
 
-export const emailSignIn = actionClient
-  .schema(LoginSchema)
-  .action(async ({ parsedInput: { email, password } }) => {
-    try {
-      await signIn("credentials", {
-        email,
-        password,
-        redirectTo: "/",
-      });
-    } catch (error) {
-      if (error instanceof AuthError) {
-        switch (error.type) {
-          case "CredentialsSignin":
-            return { error: "Email or Password Incorrect" };
-          case "AccessDenied":
-            return { error: error.message };
-          default:
-            return { error: "Something went wrong" };
-        }
-      }
-      throw error;
-    }
-    redirect("/");
+export async function signUpWithEmail(
+  _prevState: { error: string } | null,
+  formData: FormData
+) {
+  const email = formData.get("email") as string;
+
+  if (!email) {
+    return { error: "Email address is required." };
+  }
+
+  const { error } = await auth.signUp.email({
+    email,
+    name: formData.get("name") as string,
+    password: formData.get("password") as string,
   });
+
+  if (error) {
+    return { error: error.message || "Failed to create account" };
+  }
+
+  redirect("/onboarding");
+}
+
+export async function signInWithEmail(
+  _prevState: { error: string } | null,
+  formData: FormData
+) {
+  const { error } = await auth.signIn.email({
+    email: formData.get("email") as string,
+    password: formData.get("password") as string,
+  });
+
+  if (error) {
+    return { error: error.message || "Failed to sign in. Try again" };
+  }
+
+  redirect("/");
+}

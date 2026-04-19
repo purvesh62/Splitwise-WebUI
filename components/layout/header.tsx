@@ -2,9 +2,12 @@
 
 import { Menu, Moon, PanelLeft, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/client";
+import { clearApiKeyCookie } from "@/server/actions/api-key";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useApiKey } from "@/hooks/use-api-key";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -23,6 +26,16 @@ export function Header({ user }: { user: SplitwiseUser }) {
   const { toggle, setMobileOpen } = useSidebar();
   const isMobile = useIsMobile();
   const { theme, setTheme } = useTheme();
+  const { clearApiKey } = useApiKey();
+  const router = useRouter();
+
+  async function handleLogout() {
+    clearApiKey();
+    await clearApiKeyCookie();
+    await authClient.signOut();
+    router.push("/sign-in");
+    router.refresh();
+  }
 
   return (
     <header className="flex h-14 items-center justify-between border-b px-4">
@@ -81,7 +94,7 @@ export function Header({ user }: { user: SplitwiseUser }) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
+            <DropdownMenuItem onClick={handleLogout}>
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

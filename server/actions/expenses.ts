@@ -1,31 +1,38 @@
 "use server";
 
-import { authActionClient } from "@/server/lib/action-client";
+import { auth } from "@/lib/auth/server";
 import { createExpenseSchema } from "@/schemas/expense";
-import { sw } from "@/lib/splitwise";
+import { getSw } from "@/server/lib/get-sw";
 import { revalidatePath, revalidateTag } from "next/cache";
 
-export const createExpense = authActionClient
-  .schema(createExpenseSchema)
-  .action(async ({ parsedInput }) => {
-    const response = await sw.createExpense({
-      cost: parsedInput.amount,
-      description: parsedInput.description,
-      group_id: parsedInput.group_id,
-      currency_code: parsedInput.currency_code,
-      users: parsedInput.users,
-    });
+export async function createExpense(input: unknown) {
+  const { data: session } = await auth.getSession();
+  if (!session?.user) throw new Error("Unauthorized");
 
-    if (response?.errors) {
-      throw new Error(
-        response.errors.base?.[0] ?? "Failed to create expense"
-      );
-    }
+  const parsed = createExpenseSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
+  }
 
-    revalidateTag("expenses");
-    revalidateTag("groups");
-    revalidatePath(`/group/${parsedInput.group_id}`);
-    revalidatePath("/");
-
-    return { success: "Expense created successfully." };
+  const sw = await getSw();
+  const response = await sw.createExpense({
+    cost: parsed.data.amount,
+    description: parsed.data.description,
+    group_id: parsed.data.group_id,
+    currency_code: parsed.data.currency_code,
+    users: parsed.data.users,
   });
+
+  if (response?.errors) {
+    return {
+      error: response.errors.base?.[0] ?? "Failed to create expense",
+    };
+  }
+
+  revalidateTag("expenses", "max");
+  revalidateTag("groups", "max");
+  revalidatePath(`/group/${parsed.data.group_id}`);
+  revalidatePath("/");
+
+  return { success: "Expense created successfully." };
+}

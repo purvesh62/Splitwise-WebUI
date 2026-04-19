@@ -2,6 +2,7 @@ import { getCurrentUser } from "@/server/queries/user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/settings/theme-toggle";
+import { ApiKeySettings } from "@/components/settings/api-key-settings";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -16,6 +17,15 @@ export default async function SettingsPage() {
         </CardHeader>
         <CardContent>
           <ThemeToggle />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Splitwise Connection</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ApiKeySettings />
         </CardContent>
       </Card>
 
