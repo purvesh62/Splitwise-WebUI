@@ -44,7 +44,7 @@ export function RecentExpenses({ expenses }: { expenses: GroupExpense[] }) {
                 <div>
                   <p className="text-sm font-medium">{expense.description}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatFullDate(expense.created_at)}
+                    {formatFullDate(expense.date)}
                   </p>
                 </div>
               </div>

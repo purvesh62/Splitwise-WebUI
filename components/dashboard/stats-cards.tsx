@@ -1,14 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
-import type { SplitwiseFriend } from "@/types/splitwise";
+import type { SplitwiseGroup } from "@/types/splitwise";
 
-export function StatsCards({ friends }: { friends: SplitwiseFriend[] }) {
+export function StatsCards({
+  groups,
+  currentUserId,
+}: {
+  groups: SplitwiseGroup[];
+  currentUserId: number;
+}) {
   let totalOwed = 0;
   let totalOwe = 0;
 
-  for (const friend of friends) {
-    if (!friend.balance) continue;
-    for (const b of friend.balance) {
+  for (const group of groups) {
+    const me = group.members.find((m) => m.id === currentUserId);
+    if (!me?.balance) continue;
+    for (const b of me.balance) {
       const amount = parseFloat(b.amount);
       if (amount > 0) totalOwed += amount;
       else totalOwe += Math.abs(amount);

@@ -5,6 +5,7 @@ import { GroupBalances } from "@/components/groups/group-balances";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { Pagination } from "@/components/expenses/pagination";
 import { AddExpenseDrawer } from "@/components/expenses/add-expense-drawer";
+import { BulkExpenseDrawer } from "@/components/expenses/bulk-expense-drawer";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 
 export async function generateMetadata({
@@ -50,7 +51,10 @@ export default async function GroupPage({
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex items-center justify-between pb-4">
           <GroupHeader group={group} />
-          <AddExpenseDrawer userGroup={group} />
+          <div className="flex items-center gap-2">
+            <BulkExpenseDrawer userGroup={group} />
+            <AddExpenseDrawer userGroup={group} />
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           <ExpenseList expenses={expenses} />

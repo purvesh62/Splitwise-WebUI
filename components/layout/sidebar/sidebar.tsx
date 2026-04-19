@@ -6,7 +6,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { SidebarNav } from "./sidebar-nav";
 import { Landmark } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import type { SplitwiseGroup } from "@/types/splitwise";
+import type {
+  SplitwiseFriend,
+  SplitwiseGroup,
+  SplitwiseUser,
+} from "@/types/splitwise";
 import Link from "next/link";
 
 function SidebarHeader({ isCollapsed }: { isCollapsed: boolean }) {
@@ -22,14 +26,22 @@ function SidebarHeader({ isCollapsed }: { isCollapsed: boolean }) {
   );
 }
 
-export function Sidebar({ groups }: { groups: SplitwiseGroup[] }) {
+export function Sidebar({
+  groups,
+  user,
+  friends,
+}: {
+  groups: SplitwiseGroup[];
+  user: SplitwiseUser;
+  friends: SplitwiseFriend[];
+}) {
   const { isCollapsed, isMobileOpen, setMobileOpen } = useSidebar();
   const isMobile = useIsMobile();
 
   const sidebarContent = (
     <div className="flex h-full flex-col bg-sidebar">
       <SidebarHeader isCollapsed={isMobile ? false : isCollapsed} />
-      <SidebarNav groups={groups} />
+      <SidebarNav groups={groups} user={user} friends={friends} />
     </div>
   );
 

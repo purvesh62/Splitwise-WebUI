@@ -1,8 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Key, ExternalLink, CheckCircle2, Shield, Zap } from "lucide-react";
+import {
+  Key,
+  ExternalLink,
+  CheckCircle2,
+  Shield,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,18 +26,58 @@ import { setApiKeyCookie } from "@/server/actions/api-key";
 import { useApiKey } from "@/hooks/use-api-key";
 import { cn } from "@/lib/utils";
 
-const steps = [
+type OnboardingStep = {
+  icon: LucideIcon;
+  title: string;
+  description: ReactNode;
+};
+
+const steps: OnboardingStep[] = [
   {
     icon: ExternalLink,
-    title: "Get your API key",
-    description:
-      'Visit Splitwise settings, go to "Your apps" or "Register your application", and copy your API key.',
+    title: "Open the Splitwise dashboard",
+    description: (
+      <>
+        Go to{" "}
+        <a
+          href="https://secure.splitwise.com/#/dashboard"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          Dashboard
+        </a>{" "}
+        and open your app settings.
+      </>
+    ),
   },
   {
     icon: Key,
-    title: "Paste it below",
+    title: "Register your app",
+    description: (
+      <>
+        Open{" "}
+        <a
+          href="https://secure.splitwise.com/apps/new"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          Create App
+        </a>{" "}
+        and fill in: Application Name <span className="font-medium">&lt;any name you like&gt;</span>,
+        Application Description, Homepage URL{" "}
+        <span className="font-medium">http://localhost:3000</span>. Accept
+        the service terms, click <span className="font-medium">Create API key</span>,
+        then copy the API key.
+      </>
+    ),
+  },
+  {
+    icon: Key,
+    title: "Paste that in the UI",
     description:
-      "We\u2019ll verify it works by connecting to your Splitwise account.",
+      "Paste the generated API key below and we\u2019ll verify it by connecting to your Splitwise account.",
   },
   {
     icon: Zap,
@@ -152,7 +200,7 @@ export function OnboardingForm() {
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <ExternalLink className="h-3 w-3" />
-          Get your API key from Splitwise
+          Create your Splitwise API key
         </a>
       </CardFooter>
     </Card>

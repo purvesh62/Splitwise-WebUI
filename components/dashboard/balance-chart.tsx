@@ -12,22 +12,38 @@ import {
 } from "recharts";
 import type { SplitwiseGroup } from "@/types/splitwise";
 
-export function BalanceChart({ groups }: { groups: SplitwiseGroup[] }) {
+const COLOR_OWED = "hsl(142, 76%, 36%)";
+const COLOR_OWE = "hsl(0, 84%, 60%)";
+
+export function BalanceChart({
+  groups,
+  currentUserId,
+}: {
+  groups: SplitwiseGroup[];
+  currentUserId: number;
+}) {
   const data = groups
     .filter((g) => g.id !== 0)
     .map((group) => {
+      const me = group.members.find((m) => m.id === currentUserId);
       let balance = 0;
-      for (const member of group.members) {
-        for (const b of member.balance) {
+      if (me?.balance) {
+        for (const b of me.balance) {
           balance += parseFloat(b.amount);
         }
       }
+      const rawBalance = parseFloat(balance.toFixed(2));
       return {
-        name: group.name.length > 12 ? group.name.slice(0, 12) + "..." : group.name,
-        balance: parseFloat(balance.toFixed(2)),
+        name:
+          group.name.length > 12 ? group.name.slice(0, 12) + "..." : group.name,
+        fullName: group.name,
+        amount: Math.abs(rawBalance),
+        type: rawBalance >= 0 ? "owed" : "owe",
       };
     })
-    .filter((d) => d.balance !== 0);
+    .filter((d) => d.amount > 0)
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 10);
 
   if (data.length === 0) {
     return (
@@ -43,31 +59,67 @@ export function BalanceChart({ groups }: { groups: SplitwiseGroup[] }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="flex flex-col">
+      <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-lg">Balances by Group</CardTitle>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span
+              className="h-2.5 w-2.5 rounded-sm"
+              style={{ backgroundColor: COLOR_OWED }}
+            />
+            Owed to you
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span
+              className="h-2.5 w-2.5 rounded-sm"
+              style={{ backgroundColor: COLOR_OWE }}
+            />
+            You owe
+          </span>
+        </div>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+      <CardContent className="flex-1 min-h-[250px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            margin={{ top: 10, right: 5, bottom: 5, left: 5 }}
+          >
             <XAxis
               dataKey="name"
               tick={{ fontSize: 12 }}
               tickLine={false}
               axisLine={false}
             />
-            <YAxis tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
-            <Tooltip
-              formatter={(value: number) => [
-                `$${Math.abs(value).toFixed(2)}`,
-                value >= 0 ? "Owed to you" : "You owe",
-              ]}
+            <YAxis
+              domain={[0, "auto"]}
+              allowDecimals={false}
+              tick={{ fontSize: 12 }}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value: number) => `$${value}`}
             />
-            <Bar dataKey="balance" radius={[4, 4, 0, 0]}>
+            <Tooltip
+              cursor={{ fill: "hsl(var(--muted) / 0.3)" }}
+              formatter={(value: number, _name, payload) => [
+                `$${value.toFixed(2)}`,
+                payload?.payload?.type === "owed" ? "Owed to you" : "You owe",
+              ]}
+              labelFormatter={(_, payload) =>
+                payload?.[0]?.payload?.fullName ?? ""
+              }
+              contentStyle={{
+                backgroundColor: "hsl(var(--popover))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "8px",
+                fontSize: 12,
+              }}
+            />
+            <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
               {data.map((entry, index) => (
                 <Cell
                   key={index}
-                  fill={entry.balance >= 0 ? "hsl(142, 76%, 36%)" : "hsl(0, 84%, 60%)"}
+                  fill={entry.type === "owed" ? COLOR_OWED : COLOR_OWE}
                 />
               ))}
             </Bar>

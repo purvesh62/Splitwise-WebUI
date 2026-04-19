@@ -1,22 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   BarChart3,
   ChevronDown,
   Home,
+  LogOut,
+  Moon,
   Pin,
   PinOff,
+  Plus,
   Search,
   Settings,
+  Sun,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/hooks/use-sidebar";
-import type { SplitwiseGroup } from "@/types/splitwise";
+import { useApiKey } from "@/hooks/use-api-key";
+import { authClient } from "@/lib/auth/client";
+import { clearApiKeyCookie } from "@/server/actions/api-key";
+import { CreateGroupDialog } from "@/components/groups/create-group-dialog";
+import type {
+  SplitwiseFriend,
+  SplitwiseGroup,
+  SplitwiseUser,
+} from "@/types/splitwise";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -61,7 +82,7 @@ function SidebarItem({
   isCollapsed,
   onClick,
   trailing,
-  isInactive,
+  muted,
 }: {
   href: string;
   icon: React.ElementType;
@@ -69,7 +90,7 @@ function SidebarItem({
   isCollapsed: boolean;
   onClick?: () => void;
   trailing?: React.ReactNode;
-  isInactive?: boolean;
+  muted?: boolean;
 }) {
   const pathname = usePathname();
   const isActive = pathname === href;
@@ -83,7 +104,7 @@ function SidebarItem({
           "flex flex-1 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-            : isInactive
+            : muted
             ? "text-sidebar-foreground/40 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground/60"
             : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
         )}
@@ -92,11 +113,6 @@ function SidebarItem({
         {!isCollapsed && (
           <span className="truncate max-w-[140px]" title={label}>
             {label}
-          </span>
-        )}
-        {!isCollapsed && isInactive && (
-          <span className="ml-1 shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-            Inactive
           </span>
         )}
         {!isCollapsed && trailing && (
@@ -114,7 +130,6 @@ function SidebarItem({
         <TooltipTrigger asChild>{content}</TooltipTrigger>
         <TooltipContent side="right" className="text-xs">
           {label}
-          {isInactive ? " (Inactive)" : ""}
         </TooltipContent>
       </Tooltip>
     );
@@ -137,11 +152,13 @@ function SidebarSection({
   children,
   isCollapsed,
   defaultOpen = true,
+  action,
 }: {
   label: string;
   children: React.ReactNode;
   isCollapsed: boolean;
   defaultOpen?: boolean;
+  action?: React.ReactNode;
 }) {
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
 
@@ -149,26 +166,153 @@ function SidebarSection({
 
   return (
     <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50"
-      >
-        {label}
-        <ChevronDown
-          className={cn(
-            "h-3 w-3 transition-transform",
-            isOpen ? "rotate-0" : "-rotate-90"
-          )}
-        />
-      </button>
+      <div className="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex flex-1 items-center justify-between"
+        >
+          <span>{label}</span>
+          <ChevronDown
+            className={cn(
+              "h-3 w-3 transition-transform",
+              isOpen ? "rotate-0" : "-rotate-90"
+            )}
+          />
+        </button>
+        {action && <div className="ml-2 flex items-center">{action}</div>}
+      </div>
       {isOpen && children}
     </div>
   );
 }
 
-export function SidebarNav({ groups }: { groups: SplitwiseGroup[] }) {
+function SidebarUserMenu({
+  user,
+  isCollapsed,
+  onNavigate,
+}: {
+  user: SplitwiseUser;
+  isCollapsed: boolean;
+  onNavigate: () => void;
+}) {
+  const router = useRouter();
+  const { clearApiKey } = useApiKey();
+
+  async function handleLogout() {
+    clearApiKey();
+    await clearApiKeyCookie();
+    await authClient.signOut();
+    router.push("/sign-in");
+    router.refresh();
+  }
+
+  const trigger = (
+    <button
+      className={cn(
+        "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+        "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+      )}
+    >
+      <Avatar className="h-5 w-5 shrink-0">
+        {user.picture?.medium && <AvatarImage src={user.picture.medium} />}
+        <AvatarFallback className="text-[10px]">
+          {user.first_name?.[0]}
+          {user.last_name?.[0]}
+        </AvatarFallback>
+      </Avatar>
+      {!isCollapsed && (
+        <span className="truncate">{user.first_name}</span>
+      )}
+    </button>
+  );
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        {isCollapsed ? (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+            <TooltipContent side="right" className="text-xs">
+              {user.first_name} {user.last_name}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          trigger
+        )}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top" align="start" className="w-48">
+        <DropdownMenuItem asChild>
+          <Link href="/settings" onClick={onNavigate}>
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function SidebarThemeToggle({ isCollapsed }: { isCollapsed: boolean }) {
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentTheme = mounted ? theme ?? resolvedTheme : "light";
+  const isDark = currentTheme === "dark";
+
+  const content = (
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className={cn(
+        "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+        "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+      )}
+    >
+      {isDark ? (
+        <Moon className="h-4 w-4 shrink-0" />
+      ) : (
+        <Sun className="h-4 w-4 shrink-0" />
+      )}
+      {!isCollapsed && (
+        <span>{isDark ? "Dark mode" : "Light mode"}</span>
+      )}
+    </button>
+  );
+
+  if (isCollapsed) {
+    return (
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent side="right" className="text-xs">
+          Toggle theme
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return content;
+}
+
+export function SidebarNav({
+  groups,
+  user,
+  friends,
+}: {
+  groups: SplitwiseGroup[];
+  user: SplitwiseUser;
+  friends: SplitwiseFriend[];
+}) {
   const { isCollapsed, setMobileOpen } = useSidebar();
   const [search, setSearch] = React.useState("");
+  const [createGroupOpen, setCreateGroupOpen] = React.useState(false);
   const closeMobile = () => setMobileOpen(false);
   const { pinned, toggle } = usePinnedGroups();
 
@@ -178,7 +322,36 @@ export function SidebarNav({ groups }: { groups: SplitwiseGroup[] }) {
 
   const pinnedGroups = filteredGroups.filter((g) => pinned.has(g.id));
   const unpinnedGroups = filteredGroups.filter((g) => !pinned.has(g.id));
-  const sortedGroups = [...pinnedGroups, ...unpinnedGroups];
+  const activeUnpinned = unpinnedGroups.filter((g) => !isGroupInactive(g));
+  const inactiveUnpinned = unpinnedGroups.filter((g) => isGroupInactive(g));
+
+  const renderGroupItem = (group: SplitwiseGroup, isPinned: boolean) => (
+    <SidebarItem
+      key={group.id}
+      href={`/group/${group.id}`}
+      icon={Users}
+      label={group.name}
+      isCollapsed={isCollapsed}
+      muted={isGroupInactive(group)}
+      onClick={closeMobile}
+      trailing={
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle(group.id);
+          }}
+          className="p-0.5 rounded hover:bg-sidebar-accent"
+        >
+          {isPinned ? (
+            <PinOff className="h-3 w-3 text-sidebar-foreground/50" />
+          ) : (
+            <Pin className="h-3 w-3 text-sidebar-foreground/50" />
+          )}
+        </button>
+      }
+    />
+  );
 
   return (
     <TooltipProvider>
@@ -201,72 +374,50 @@ export function SidebarNav({ groups }: { groups: SplitwiseGroup[] }) {
         </div>
 
         <ScrollArea className="flex-1 px-2">
-          <SidebarSection label="Groups" isCollapsed={isCollapsed}>
-            {!isCollapsed && (
-              <div className="px-1 pb-2">
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search groups..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="h-9 pl-8"
-                  />
-                </div>
-              </div>
-            )}
-            <div className="flex flex-col gap-0.5">
-              {pinnedGroups.length > 0 && !isCollapsed && (
-                <>
-                  {pinnedGroups.map((group) => (
-                    <SidebarItem
-                      key={group.id}
-                      href={`/group/${group.id}`}
-                      icon={Users}
-                      label={group.name}
-                      isCollapsed={isCollapsed}
-                      isInactive={isGroupInactive(group)}
-                      onClick={closeMobile}
-                      trailing={
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            toggle(group.id);
-                          }}
-                          className="p-0.5 rounded hover:bg-sidebar-accent"
-                        >
-                          <PinOff className="h-3 w-3 text-sidebar-foreground/50" />
-                        </button>
-                      }
-                    />
-                  ))}
-                  <div className="mx-3 my-1 border-t border-sidebar-border" />
-                </>
-              )}
-              {unpinnedGroups.map((group) => (
-                <SidebarItem
-                  key={group.id}
-                  href={`/group/${group.id}`}
-                  icon={Users}
-                  label={group.name}
-                  isCollapsed={isCollapsed}
-                  isInactive={isGroupInactive(group)}
-                  onClick={closeMobile}
-                  trailing={
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggle(group.id);
-                      }}
-                      className="p-0.5 rounded hover:bg-sidebar-accent"
-                    >
-                      <Pin className="h-3 w-3 text-sidebar-foreground/50" />
-                    </button>
-                  }
+          {!isCollapsed && (
+            <div className="px-1 py-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search groups..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="h-9 pl-8"
                 />
-              ))}
+              </div>
+            </div>
+          )}
+
+          {pinnedGroups.length > 0 && (
+            <SidebarSection label="Pinned Groups" isCollapsed={isCollapsed}>
+              <div className="flex flex-col gap-0.5">
+                {pinnedGroups.map((group) => renderGroupItem(group, true))}
+              </div>
+            </SidebarSection>
+          )}
+
+          <SidebarSection
+            label="Groups"
+            isCollapsed={isCollapsed}
+            action={
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setCreateGroupOpen(true)}
+                    className="flex h-5 w-5 items-center justify-center rounded hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    aria-label="Create group"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs">
+                  Create group
+                </TooltipContent>
+              </Tooltip>
+            }
+          >
+            <div className="flex flex-col gap-0.5">
+              {activeUnpinned.map((group) => renderGroupItem(group, false))}
               {!isCollapsed && filteredGroups.length === 0 && (
                 <p className="px-3 py-2 text-xs text-muted-foreground">
                   No groups found.
@@ -274,18 +425,35 @@ export function SidebarNav({ groups }: { groups: SplitwiseGroup[] }) {
               )}
             </div>
           </SidebarSection>
+
+          {inactiveUnpinned.length > 0 && (
+            <SidebarSection
+              label="Inactive Groups"
+              isCollapsed={isCollapsed}
+              defaultOpen={false}
+            >
+              <div className="flex flex-col gap-0.5">
+                {inactiveUnpinned.map((group) => renderGroupItem(group, false))}
+              </div>
+            </SidebarSection>
+          )}
         </ScrollArea>
 
-        <div className="border-t border-sidebar-border px-2 py-2">
-          <SidebarItem
-            href="/settings"
-            icon={Settings}
-            label="Settings"
+        <div className="border-t border-sidebar-border px-2 py-2 space-y-0.5">
+          <SidebarThemeToggle isCollapsed={isCollapsed} />
+          <SidebarUserMenu
+            user={user}
             isCollapsed={isCollapsed}
-            onClick={closeMobile}
+            onNavigate={closeMobile}
           />
         </div>
       </div>
+
+      <CreateGroupDialog
+        friends={friends}
+        open={createGroupOpen}
+        onOpenChange={setCreateGroupOpen}
+      />
     </TooltipProvider>
   );
 }
