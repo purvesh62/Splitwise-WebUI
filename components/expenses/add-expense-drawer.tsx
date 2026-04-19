@@ -163,7 +163,7 @@ export function AddExpenseDrawer({ userGroup }: { userGroup: SplitwiseGroup }) {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button size="sm">
+        <Button size="sm" className="flex-1 md:flex-none">
           <Plus className="mr-1 h-4 w-4" />
           Add Expense
         </Button>

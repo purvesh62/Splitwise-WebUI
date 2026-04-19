@@ -345,7 +345,7 @@ export function BulkExpenseDrawer({
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" className="flex-1 md:flex-none">
           <Layers className="mr-1 h-4 w-4" />
           Bulk Add
         </Button>

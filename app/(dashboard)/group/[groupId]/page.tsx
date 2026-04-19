@@ -49,9 +49,9 @@ export default async function GroupPage({
   return (
     <div className="flex h-full flex-col gap-6 lg:flex-row">
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex items-center justify-between pb-4">
+        <div className="flex flex-col gap-3 pb-4 md:flex-row md:items-center md:justify-between">
           <GroupHeader group={group} />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 md:shrink-0">
             <BulkExpenseDrawer userGroup={group} />
             <AddExpenseDrawer userGroup={group} />
           </div>
