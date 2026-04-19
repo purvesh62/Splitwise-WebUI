@@ -101,10 +101,10 @@ export function BalanceChart({
             />
             <Tooltip
               cursor={{ fill: "hsl(var(--muted) / 0.3)" }}
-              formatter={(value: number, _name, payload) => [
+              formatter={((value: number, _name: string, entry: { payload?: { type?: string } }) => [
                 `$${value.toFixed(2)}`,
-                payload?.payload?.type === "owed" ? "Owed to you" : "You owe",
-              ]}
+                entry?.payload?.type === "owed" ? "Owed to you" : "You owe",
+              ]) as never}
               labelFormatter={(_, payload) =>
                 payload?.[0]?.payload?.fullName ?? ""
               }

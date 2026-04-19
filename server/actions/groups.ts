@@ -17,27 +17,43 @@ const createGroupSchema = z.object({
   ),
 });
 
-export async function createGroup(input: unknown) {
-  const { data: session } = await auth.getSession();
-  if (!session?.user) throw new Error("Unauthorized");
-
-  const parsed = createGroupSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
-  }
-
-  const sw = await getSw();
+export async function createGroup(
+  input: unknown
+): Promise<{ error?: string; success?: boolean; groupId?: number | null }> {
   try {
-    const response = await sw.createGroup({
+    const { data: session } = await auth.getSession();
+    if (!session?.user) return { error: "You are not signed in." };
+
+    const parsed = createGroupSchema.safeParse(input);
+    if (!parsed.success) {
+      return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
+    }
+
+    const sw = await getSw();
+
+    const args: Record<string, unknown> = {
       name: parsed.data.name,
-      users: parsed.data.members,
-    });
+    };
+    if (parsed.data.members.length > 0) {
+      args.users = parsed.data.members;
+    }
+
+    let response: { id?: number; errors?: Record<string, string[]> } | undefined;
+    try {
+      response = await sw.createGroup(args);
+    } catch (err) {
+      console.error("[createGroup] sw.createGroup threw:", err);
+      const message =
+        err instanceof Error ? err.message : String(err ?? "Unknown error");
+      return { error: `Splitwise rejected the request: ${message}` };
+    }
 
     if (response?.errors) {
       const message =
         response.errors.base?.[0] ??
         Object.values(response.errors).flat()[0] ??
         "Failed to create group";
+      console.error("[createGroup] API errors:", response.errors);
       return { error: String(message) };
     }
 
@@ -46,6 +62,7 @@ export async function createGroup(input: unknown) {
 
     return { success: true, groupId: response?.id ?? null };
   } catch (err) {
+    console.error("[createGroup] unexpected error:", err);
     return {
       error: err instanceof Error ? err.message : "Failed to create group",
     };

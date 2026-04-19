@@ -1,9 +1,9 @@
-import { auth } from "@/lib/auth/server";
+import { NextResponse } from "next/server";
 
-export default auth.middleware({
-  loginUrl: "/sign-in",
-});
+export default function proxy() {
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ["/", "/analytics", "/group/:path*", "/settings"],
+  matcher: [],
 };

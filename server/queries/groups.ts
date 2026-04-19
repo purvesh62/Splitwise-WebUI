@@ -48,11 +48,12 @@ export async function getGroupExpenses(
     async (): Promise<{ expenses: GroupExpense[]; hasMore: boolean }> => {
       try {
         const sw = createSplitwiseClient(apiKey);
-        const expenses: GroupExpense[] = await sw.getExpenses({
+        const raw: GroupExpense[] = await sw.getExpenses({
           group_id: groupId,
           limit: limit + 1,
           offset,
         });
+        const expenses = raw.filter((e) => !e.deleted_at);
         return {
           expenses: expenses.slice(0, limit),
           hasMore: expenses.length > limit,

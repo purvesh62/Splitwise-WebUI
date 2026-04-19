@@ -122,7 +122,18 @@ export function CreateGroupDialog({
       members.push({ email });
     }
 
-    const result = await createGroup({ name: name.trim(), members });
+    let result: Awaited<ReturnType<typeof createGroup>> | undefined;
+    try {
+      result = await createGroup({ name: name.trim(), members });
+    } catch (err) {
+      console.error("[create-group] client error:", err);
+      setSubmitting(false);
+      setError(
+        err instanceof Error ? err.message : "Failed to create group."
+      );
+      return;
+    }
+
     setSubmitting(false);
 
     if (result?.error) {

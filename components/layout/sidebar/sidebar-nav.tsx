@@ -49,15 +49,20 @@ import * as React from "react";
 const PINNED_GROUPS_KEY = "wisesplit-pinned-groups";
 
 function usePinnedGroups() {
-  const [pinned, setPinned] = React.useState<Set<number>>(() => {
-    if (typeof window === "undefined") return new Set();
+  const [pinned, setPinned] = React.useState<Set<number>>(() => new Set());
+  const [hydrated, setHydrated] = React.useState(false);
+
+  React.useEffect(() => {
     try {
       const stored = localStorage.getItem(PINNED_GROUPS_KEY);
-      return stored ? new Set(JSON.parse(stored) as number[]) : new Set();
+      if (stored) {
+        setPinned(new Set(JSON.parse(stored) as number[]));
+      }
     } catch {
-      return new Set();
+      // ignore
     }
-  });
+    setHydrated(true);
+  }, []);
 
   const toggle = React.useCallback((groupId: number) => {
     setPinned((prev) => {
@@ -67,12 +72,16 @@ function usePinnedGroups() {
       } else {
         next.add(groupId);
       }
-      localStorage.setItem(PINNED_GROUPS_KEY, JSON.stringify([...next]));
+      try {
+        localStorage.setItem(PINNED_GROUPS_KEY, JSON.stringify([...next]));
+      } catch {
+        // ignore
+      }
       return next;
     });
   }, []);
 
-  return { pinned, toggle };
+  return { pinned, toggle, hydrated };
 }
 
 function SidebarItem({
@@ -314,14 +323,19 @@ export function SidebarNav({
   const [search, setSearch] = React.useState("");
   const [createGroupOpen, setCreateGroupOpen] = React.useState(false);
   const closeMobile = () => setMobileOpen(false);
-  const { pinned, toggle } = usePinnedGroups();
+  const { pinned, toggle, hydrated } = usePinnedGroups();
 
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const pinnedGroups = filteredGroups.filter((g) => pinned.has(g.id));
-  const unpinnedGroups = filteredGroups.filter((g) => !pinned.has(g.id));
+  // Until hydrated, treat no groups as pinned so server/client markup match.
+  const pinnedGroups = hydrated
+    ? filteredGroups.filter((g) => pinned.has(g.id))
+    : [];
+  const unpinnedGroups = hydrated
+    ? filteredGroups.filter((g) => !pinned.has(g.id))
+    : filteredGroups;
   const activeUnpinned = unpinnedGroups.filter((g) => !isGroupInactive(g));
   const inactiveUnpinned = unpinnedGroups.filter((g) => isGroupInactive(g));
 
