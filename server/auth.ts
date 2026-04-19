@@ -1,7 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import bcrypt from "bcrypt"
-import { LoginSchema } from "@/schema/login-schema"
+import { LoginSchema } from "@/schemas/auth"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     secret: process.env.AUTH_SECRET,
